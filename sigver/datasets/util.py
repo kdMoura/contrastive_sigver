@@ -223,8 +223,6 @@ def process_single_image(img_path: str,
     max_signatures = 1
 
     x = np.empty((max_signatures, H, W), dtype=np.uint8)
-    
-    print('Allocated x of shape: %s' % (x.shape,))
 
     input_img = imread(img_path, as_gray=True)
     img = img_as_ubyte(input_img)
