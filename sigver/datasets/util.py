@@ -1,6 +1,8 @@
 import numpy as np
 import functools
 import os
+from skimage.io import imread
+from skimage import img_as_ubyte
 from tqdm import tqdm
 from sigver.datasets.base import IterableDataset
 from sigver.preprocessing.normalize import preprocess_signature
@@ -194,6 +196,43 @@ def process_dataset_images(dataset: IterableDataset,
 
     return x, y, yforg, user_mapping, used_files
 
+def process_single_image(img_path: str, 
+                           dataset_maxsize: Tuple[int, int],
+                           img_size: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, dict, np.ndarray]:
+    """ Process a single signature image from a dataset, returning numpy arrays.
+
+    Parameters
+    ----------
+    img_path : str
+        Path to the image to be processed
+    dataset_maxsize : Tuple[int, int]
+        The maximum width and height of any image in the dataset to which this image belongs
+    img_size : tuple (H x W)
+        The final size of the images
+
+    Returns
+    -------
+    x : np.ndarray (H x W) are N grayscale signature images of size H x W
+    """
+    preprocess_fn = functools.partial(preprocess_signature,
+                                      canvas_size=dataset_maxsize,#(2078, 3307), #
+                                      img_size=img_size,
+                                      input_size=img_size) # Don't crop it now
+    
+    H, W = img_size
+    max_signatures = 1
+
+    x = np.empty((max_signatures, H, W), dtype=np.uint8)
+    
+    print('Allocated x of shape: %s' % (x.shape,))
+
+    input_img = imread(img_path, as_gray=True)
+    img = img_as_ubyte(input_img)
+
+    x = preprocess_fn(img)
+    #x = np.expand_dims(x, 0)
+
+    return x
 
 def get_subset(data: Tuple[np.ndarray, ...],
                subset: Union[list, range],
