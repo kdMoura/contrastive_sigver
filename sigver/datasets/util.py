@@ -196,7 +196,7 @@ def process_dataset_images(dataset: IterableDataset,
 
     return x, y, yforg, user_mapping, used_files
 
-def process_single_image(img_path: str, 
+def process_single_image(img:  Union[str, np.ndarray], 
                            dataset_maxsize: Tuple[int, int],
                            img_size: Tuple[int, int]) -> Tuple[np.ndarray, np.ndarray, np.ndarray, dict, np.ndarray]:
     """ Process a single signature image from a dataset, returning numpy arrays.
@@ -224,7 +224,11 @@ def process_single_image(img_path: str,
 
     x = np.empty((max_signatures, H, W), dtype=np.uint8)
 
-    input_img = imread(img_path, as_gray=True)
+    if isinstance(img, str):
+        # if data is a path, load preprocessed data
+        input_img = imread(img, as_gray=True)
+    else:
+        input_img = img
     img = img_as_ubyte(input_img)
 
     x = preprocess_fn(img)
