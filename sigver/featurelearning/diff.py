@@ -12,8 +12,8 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 base_model1 = models.available_models['signet']().to(device)
 base_model2 = models.available_models['signet']().to(device)
 
-parameters1,_,_ = torch.load(file1)
-parameters2,_,_ = torch.load(file2)
+parameters1,_,_ = torch.load(file1, weights_only=False)
+parameters2,_,_ = torch.load(file2, weights_only=False)
 
 base_model1.load_state_dict(parameters1)
 base_model2.load_state_dict(parameters2)

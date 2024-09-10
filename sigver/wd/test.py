@@ -16,7 +16,7 @@ def main(args):
         set(exp_users).intersection(set(dev_users))) == 0, 'Exploitation set and Development set must not overlap'
 
     state_dict, class_weights, forg_weights = torch.load(args.model_path,
-                                                                  map_location=lambda storage, loc: storage)
+                                                                  map_location=lambda storage, loc: storage, weights_only=False)
     device = torch.device('cuda', args.gpu_idx) if torch.cuda.is_available() else torch.device('cpu')
 
     print('Using device: {}'.format(device))

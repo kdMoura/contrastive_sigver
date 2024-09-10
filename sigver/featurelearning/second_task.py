@@ -314,7 +314,7 @@ def main(args):
 
     if args.task == 'multi':
         print('Weights are being loaded from:', args.logdir + '/model_best.pth')
-        base_model_params, classification_params, forg_params = torch.load(args.logdir + '/model_best.pth')
+        base_model_params, classification_params, forg_params = torch.load(args.logdir + '/model_best.pth', weights_only=False)
         base_model.load_state_dict(base_model_params)
         #Classification_params and forg_params are used only in SigNet
 

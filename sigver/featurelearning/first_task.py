@@ -357,7 +357,7 @@ def main(args):
 
     if args.test:
         print('Testing')
-        base_model_params, classification_params, forg_params = torch.load(args.checkpoint)
+        base_model_params, classification_params, forg_params = torch.load(args.checkpoint, weights_only=False)
         base_model.load_state_dict(base_model_params)
 
         classification_layer.load_state_dict(classification_params)
