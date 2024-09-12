@@ -203,8 +203,8 @@ def process_single_image(img:  Union[str, np.ndarray],
 
     Parameters
     ----------
-    img_path : str
-        Path to the image to be processed
+    img : str or np.ndarray 
+        Path to the image to be processed or an image data (H X W)
     dataset_maxsize : Tuple[int, int]
         The maximum width and height of any image in the dataset to which this image belongs
     img_size : tuple (H x W)
