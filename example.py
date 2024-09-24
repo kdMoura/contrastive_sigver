@@ -24,7 +24,7 @@ input = torch.from_numpy(processed).view(1, 1, 150, 220)
 input = input.float().div(255).to(device)
 
 # Load the model
-state_dict, _, _ = torch.load('models/triplet_01/model.pth')
+state_dict, _, _ = torch.load('models/triplet_01/model.pth', weights_only=False)
 base_model = SigNet().to(device).eval()
 base_model.load_state_dict(state_dict)
 
