@@ -1,3 +1,4 @@
+import os
 import torch
 from sigver.featurelearning.data import extract_features
 import sigver.featurelearning.models as models
@@ -79,12 +80,13 @@ if __name__ == '__main__':
     parser.add_argument('--input-size', nargs=2, default=(150, 220))
 
     parser.add_argument('--exp-users', type=int, nargs=2, default=(0, 300))
-    parser.add_argument('--dev-users', type=int, nargs=2, default=(5000, 7000))
+    parser.add_argument('--dev-users', type=int, nargs=2, default=(300, 581))
 
     parser.add_argument('--gen-for-train', type=int, default=12)
     parser.add_argument('--gen-for-test', type=int, default=10)
     parser.add_argument('--gen-for-ref', type=int, default=12)
 
+    
     parser.add_argument('--svm-type', choices=['rbf', 'linear'], default='rbf')
     parser.add_argument('--svm-c', type=float, default=1)
     parser.add_argument('--svm-gamma', type=float, default=2**-11)
@@ -94,8 +96,32 @@ if __name__ == '__main__':
     parser.add_argument('--gpu-idx', type=int, default=0)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--folds', type=int, default=10)
+    
+    parser.add_argument('--model-choice',  type=str, default='svm')
+    parser.add_argument('--diss-generation', help='Diss generation type', choices=('standard','cluster'), default='standard', type=str)
 
-    arguments = parser.parse_args()
-    print(arguments)
+    
+    
+    env = 'dev' 
 
-    main(arguments)
+    if env == 'dev':
+        home_dir = os.path.expanduser("~")
+        data_path = os.path.join(home_dir,'FilesK/databases/preprocessed/gpds_synth_10k')
+        model_path = os.path.join(home_dir,'FilesK/code/contrastive_sigver/models/signet_synth/model.pth')
+        save_path = os.path.join(home_dir,'FilesK/exp_results/sigver_cluster/result.pkl')
+        
+        args = parser.parse_args([ 
+                                '--model-path', model_path, 
+                                '--data-path',data_path,
+                                '--save-path', save_path,
+                                '--model-choice','svm'
+                                ])
+        main(args)
+    else:
+         
+        #args = main_parser.parse_args()
+        #args.func(args)
+        arguments = parser.parse_args()
+        print(arguments)
+
+        main(arguments)
