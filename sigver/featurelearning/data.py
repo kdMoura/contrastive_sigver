@@ -1,10 +1,14 @@
 import torch
 from torch.utils.data import Dataset, TensorDataset, DataLoader
-from torchvision import transforms as transforms
+from torchvision import transforms
 
-from sigver.featurelearning.models.signet import SigNet
 from sigver.datasets.util import load_dataset
 
+from sigver.featurelearning.models.modified_resnet import build_modified_resnet
+from torchvision.models.resnet import ResNet
+from sigver.featurelearning.models.modified_transformer import build_modified_transformer
+from timm.models.vision_transformer import VisionTransformer
+from sigver.featurelearning.models import available_models
 
 class TransformDataset(Dataset):
     """
@@ -50,15 +54,25 @@ def extract_features(x, process_function, batch_size, input_size=None):
             result.append(process_function(batch))
     return torch.cat(result).cpu().numpy()
 
-def get_features(model_path, data, gpu_idx=0, input_size=(150, 220), batch_size=32):
+def get_features(model_path, data, gpu_idx=0, input_size=(150, 220), batch_size=32, arch='signet'):
+    #arch = signet, resnet_152, vit
     
     state_dict, class_weights, forg_weights = torch.load(model_path,map_location=lambda storage, loc: storage, weights_only=False)
     device = torch.device('cuda', gpu_idx) if torch.cuda.is_available() else torch.device('cpu')
+        
+    if available_models[arch] is ResNet:
+        
+        base_model = build_modified_resnet(arch).to(device).eval()
+        print('ResNet based model has been created.')
+    elif available_models[arch] is VisionTransformer:
 
-    #print('Using device: {}'.format(device))
+        base_model = build_modified_transformer().to(device).eval()
+        print('VisionTransformer architecture based model has been created.')
+    else:
 
-    #base_model = models.available_models['signet']().to(device).eval()
-    base_model = SigNet().to(device).eval()
+        base_model = available_models[arch]().to(device).eval()
+        print('SigNet based model has been created.')
+        
 
     base_model.load_state_dict(state_dict)
 
@@ -76,4 +90,4 @@ def get_features(model_path, data, gpu_idx=0, input_size=(150, 220), batch_size=
     
     # If not a path, extract features from provided data. Data should be in the format: (n_samples, 1, 170, 242)
     return extract_features(data, process_fn, batch_size, input_size)
-    
+
