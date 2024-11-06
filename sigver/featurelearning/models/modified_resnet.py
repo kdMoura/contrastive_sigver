@@ -12,7 +12,11 @@ def linear_bn_relu(in_features, out_features):
 
 
 def build_modified_resnet(arch_name='resnet18', feature_space_size=2048):
-    base_model = models.__dict__[arch_name](pretrained=False)
+    #base_model = models.__dict__[arch_name](pretrained=False)
+    # Updated line
+    base_model = models.__dict__[arch_name](weights=None)  # For no pre-trained weights
+    # or if you want to use default pre-trained weights
+    #base_model = models.__dict__[arch_name](weights='DEFAULT')
     
     #Modify input to single channel (grayscale)
     base_model.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3,bias=False)
