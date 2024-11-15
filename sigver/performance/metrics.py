@@ -49,6 +49,9 @@ def compute_metrics(genuine_preds: List[np.ndarray],
     aucs, meanAUC = compute_AUCs(genuine_preds, skilled_preds)
     EER, global_threshold = compute_EER(all_genuine_preds, all_skilled_preds)
     EER_userthresholds = calculate_EER_user_thresholds(genuine_preds, skilled_preds)
+    
+    EER_rf, global_threshold_rf = compute_EER(all_genuine_preds, all_random_preds)
+    EER_userthresholds_rf = calculate_EER_user_thresholds(genuine_preds, random_preds)
 
 
     all_metrics = {'FRR': FRR,
@@ -58,7 +61,10 @@ def compute_metrics(genuine_preds: List[np.ndarray],
                    'EER': EER,
                    'EER_userthresholds': EER_userthresholds,
                    'auc_list': aucs,
-                   'global_threshold': global_threshold}
+                   'global_threshold': global_threshold,
+                   'EER_rf':EER_rf,
+                   'EER_userthresholds_rf': EER_userthresholds_rf,
+                   'global_threshold_rf': global_threshold_rf}
 
     return all_metrics
 
