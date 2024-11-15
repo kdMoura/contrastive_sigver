@@ -35,7 +35,7 @@ def train_wdclassifier_user(training_set: Tuple[np.ndarray, np.ndarray],
 
     """
 
-    assert svmType in ['linear', 'rbf']
+    assert svmType in ['linear', 'rbf', 'sgd']
 
     train_x = training_set[0]
     train_y = training_set[1]
