@@ -5,7 +5,7 @@ import sklearn
 import sklearn.svm
 import sklearn.pipeline as pipeline
 import sklearn.preprocessing as preprocessing
-
+from sklearn.linear_model import SGDClassifier
 import sigver.performance.metrics as metrics
 import sigver.wi.data as data
 
@@ -42,8 +42,16 @@ def train_wiclassifier(training_set: Tuple[np.ndarray, np.ndarray],
     # Train the model
     if svmType == 'rbf':
         model = sklearn.svm.SVC(C=C, gamma=gamma)
-    else:
+    elif svmType == 'linear':
         model = sklearn.svm.SVC(kernel='linear', C=C)
+    else:
+        model = SGDClassifier(loss='hinge', 
+                              random_state=42,
+                              alpha=0.1,
+                              #eta0=1,
+                              eta0=0.01,
+                              max_iter=2000,
+                              tol=0.001)
 
     model_with_scaler = pipeline.Pipeline([('scaler', preprocessing.StandardScaler(with_mean=False)),
                                            ('classifier', model)])

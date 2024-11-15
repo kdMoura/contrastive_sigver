@@ -85,7 +85,7 @@ if __name__ == '__main__':
     parser.add_argument('--gen-for-test', type=int, default=10)
     parser.add_argument('--gen-for-ref', type=int, default=12)
 
-    parser.add_argument('--svm-type', choices=['rbf', 'linear'], default='rbf')
+    parser.add_argument('--svm-type', choices=['rbf', 'linear', 'sgd'], default='rbf')
     parser.add_argument('--svm-c', type=float, default=1)
     parser.add_argument('--svm-gamma', type=float, default=2**-11)
     parser.add_argument('--fusion', help='Fusion type', choices=('max','min','mean','median'), default='max', type=str)

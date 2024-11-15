@@ -86,7 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('--forg-from-exp', type=int, default=0)
     parser.add_argument('--forg-from-dev', type=int, default=14)
 
-    parser.add_argument('--svm-type', choices=['rbf', 'linear'], default='rbf')
+    parser.add_argument('--svm-type', choices=['rbf', 'linear', 'sgd'], default='rbf')
     parser.add_argument('--svm-c', type=float, default=1)
     parser.add_argument('--svm-gamma', type=float, default=2**-11)
     parser.add_argument('--thr', type=float, default=0)

@@ -3,6 +3,7 @@ from tqdm import tqdm
 from typing import Tuple, Optional, Dict
 import sklearn
 import sklearn.svm
+from sklearn.linear_model import SGDClassifier
 import sklearn.pipeline as pipeline
 import sklearn.preprocessing as preprocessing
 
@@ -47,8 +48,16 @@ def train_wdclassifier_user(training_set: Tuple[np.ndarray, np.ndarray],
     # Train the model
     if svmType == 'rbf':
         model = sklearn.svm.SVC(C=C, gamma=gamma, class_weight={1: skew})
-    else:
+    elif svmType == 'linear':
         model = sklearn.svm.SVC(kernel='linear', C=C, class_weight={1: skew})
+    else:
+        model = SGDClassifier(loss='hinge', 
+                              random_state=42,
+                              alpha=0.1,
+                              #eta0=1,
+                              eta0=0.01,
+                              max_iter=2000,
+                              tol=0.001)
 
     model_with_scaler = pipeline.Pipeline([('scaler', preprocessing.StandardScaler(with_mean=False)),
                                            ('classifier', model)])
