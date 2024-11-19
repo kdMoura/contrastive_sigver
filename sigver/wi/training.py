@@ -8,6 +8,7 @@ import sklearn.preprocessing as preprocessing
 from sklearn.linear_model import SGDClassifier
 import sigver.performance.metrics as metrics
 import sigver.wi.data as data
+import sys
 
 
 def train_wiclassifier(training_set: Tuple[np.ndarray, np.ndarray],
@@ -170,7 +171,7 @@ def test_all_users(model: sklearn.svm.SVC,
 
     users = np.unique(y_test)
     
-    for user in tqdm(users):
+    for user in tqdm(users, file=sys.stdout):
         
         skilled_forgeries_idx = np.flatnonzero((y_test == user) & (yforg_test == 1))
         test_genuine_idx = np.flatnonzero((y_test == user) & (yforg_test == 0))

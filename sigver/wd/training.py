@@ -6,9 +6,9 @@ import sklearn.svm
 from sklearn.linear_model import SGDClassifier
 import sklearn.pipeline as pipeline
 import sklearn.preprocessing as preprocessing
-
 import sigver.performance.metrics as metrics
 import sigver.wd.data as data
+import sys
 
 
 def train_wdclassifier_user(training_set: Tuple[np.ndarray, np.ndarray],
@@ -146,7 +146,7 @@ def train_all_users(exp_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
     else:
         other_negatives = []
 
-    for user in tqdm(users):
+    for user in tqdm(users, file=sys.stdout):
         training_set = data.create_training_set_for_user(user, exp_train, num_forg_from_exp, other_negatives, rng)
         classifiers[user] = train_wdclassifier_user(training_set, svm_type, C, gamma)
 
