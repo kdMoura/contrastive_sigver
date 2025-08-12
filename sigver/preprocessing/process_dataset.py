@@ -59,8 +59,7 @@ def process_dataset(dataset: IterableDataset,
              user_mapping=user_mapping,
              filenames=used_files)
 
-
-if __name__ == '__main__':
+def parse_args():
     parser = argparse.ArgumentParser(description='Process datasets')
     parser.add_argument('--dataset', choices=available_datasets.keys(), required=True,
                         help='The dataset type')
@@ -72,8 +71,11 @@ if __name__ == '__main__':
                         help='Image size (H x W)')
     parser.add_argument('--users', type=int, nargs=2, help='Users to be extracted')
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
+if __name__ == '__main__':
+   
+    args = parse_args()
     ds = available_datasets[args.dataset]
     dataset = ds(args.path)
 
