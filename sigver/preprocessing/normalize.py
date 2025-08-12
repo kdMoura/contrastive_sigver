@@ -75,6 +75,10 @@ def normalize_image(img: np.ndarray,
     # Find the center of mass
     binarized_image = blurred_image > threshold
     r, c = np.where(binarized_image == 0)
+    if len(r) == 0: # Image already binarized
+        r, c = np.where(img == 0)
+    if len(r) == 0:
+        raise ValueError("No zero-valued pixels found in either binarized or original image.")
     r_center = int(r.mean() - r.min())
     c_center = int(c.mean() - c.min())
 
