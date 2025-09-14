@@ -156,6 +156,7 @@ def train_all_users(exp_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
 def test_all_users(classifier_all_user: Dict[int, sklearn.svm.SVC],
                    exp_test: Tuple[np.ndarray, np.ndarray, np.ndarray],
                    num_gen_test: int,
+                   num_sk_test: int,
                    global_threshold: float,
                    rng: np.random.RandomState) -> Dict:
     """ Test classifiers for all users and return the metrics
@@ -191,7 +192,7 @@ def test_all_users(classifier_all_user: Dict[int, sklearn.svm.SVC],
         test_genuine_idx = np.flatnonzero((y_test == user) & (yforg_test == 0))
         random_forgeries_idx = np.flatnonzero((y_test != user) & (yforg_test == 0))
 
-        skilled_forgeries_chosen_idx = rng.choice(skilled_forgeries_idx, num_gen_test, replace=False)
+        skilled_forgeries_chosen_idx = rng.choice(skilled_forgeries_idx, num_sk_test, replace=False)
         test_genuine_chosen_idx = rng.choice(test_genuine_idx, num_gen_test, replace=False)
         
         user_candidates = np.delete(users, np.where(users == user))
@@ -236,6 +237,7 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
                          num_forg_from_exp: int,
                          num_forg_from_dev: int,
                          num_gen_test: int,
+                         num_sk_test: int,
                          global_threshold: float = 0,
                          rng: np.random.RandomState = np.random.RandomState()) \
         -> Tuple[Dict[int, sklearn.svm.SVC], Dict]:
@@ -264,6 +266,9 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
         than the current user) to consider as negative sample.
     num_gen_test: int
         Number of genuine signatures for testing
+    um_sk_test: int
+        Number of skilled signatures for testing. 
+        If set to -1 (default), uses the same value as '--gen-for-test'
     global_threshold: float
         The threshold used to compute false acceptance and
         false rejection rates
@@ -291,6 +296,6 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
                                   num_forg_from_dev, num_forg_from_exp, rng)
 
     print('Tests have been performed:')
-    results = test_all_users(classifiers, exp_test, num_gen_test, global_threshold, rng)
+    results = test_all_users(classifiers, exp_test, num_gen_test, num_sk_test, global_threshold, rng)
 
     return classifiers, results

@@ -15,6 +15,9 @@ from sigver.featurelearning.models import available_models
 
 
 def main(args):
+    
+    sk_for_test=args.sk_for_test if args.sk_for_test != -1 else args.gen_for_test
+    
     exp_users = range(*args.exp_users)
     dev_users = range(*args.dev_users)
 
@@ -85,6 +88,7 @@ def main(args):
                                                              num_forg_from_exp=args.forg_from_exp,
                                                              num_forg_from_dev=args.forg_from_dev,
                                                              num_gen_test=args.gen_for_test,
+                                                             num_sk_test=sk_for_test,
                                                              global_threshold=args.thr,
                                                              rng=rng)
         this_eer_u, this_eer = results['all_metrics']['EER_userthresholds'], results['all_metrics']['EER']
@@ -118,6 +122,8 @@ def parse_args():
     parser.add_argument('--gen-for-test', type=int, default=10)
     parser.add_argument('--forg-from-exp', type=int, default=0)
     parser.add_argument('--forg-from-dev', type=int, default=14)
+    parser.add_argument('--sk-for-test', type=int, default=-1, 
+        help="Number of skilled forgeries for testing. If set to -1 (default), uses the same value as '--gen-for-test'")
 
     parser.add_argument('--svm-type', choices=['rbf', 'linear', 'sgd'], default='rbf')
     parser.add_argument('--svm-c', type=float, default=1)
