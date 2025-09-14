@@ -59,6 +59,7 @@ def get_features(model_path, data, gpu_idx=0, input_size=(150, 220), batch_size=
     
     state_dict, class_weights, forg_weights = torch.load(model_path,map_location=lambda storage, loc: storage, weights_only=False)
     device = torch.device('cuda', gpu_idx) if torch.cuda.is_available() else torch.device('cpu')
+    print('Using device: {}'.format(device))
         
     if available_models[arch] is ResNet:
         
