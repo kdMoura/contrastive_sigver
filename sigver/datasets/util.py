@@ -50,6 +50,28 @@ def load_dataset(path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, Dict, n
 
         return x, y, yforg, user_mapping, filenames
 
+def load_extracted_features(data_path:str) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Load pre-extracted signature features from a numpy file.
+
+    Parameters:
+    -----------
+    data_path (str): Path to the .npz file containing the extracted features.
+
+    Returns:
+    -----------
+    tuple: Contains:
+        - features (numpy.ndarray): Extracted features of shape (samples, features).
+        - y (numpy.ndarray): Labels with user IDs.
+        - yforg (numpy.ndarray): Forgery flag (if 1 it is a forgery).
+    """
+    
+    data_path = os.path.join(data_path)
+    
+    with np.load(data_path, allow_pickle=True) as data:
+        features, y, yforg = data['features'], data['y'], data['yforg']
+   
+    return features, y, yforg
 
 def process_dataset(dataset: IterableDataset,
                     save_path: str,

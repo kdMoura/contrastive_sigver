@@ -2,7 +2,7 @@ import torch
 from sigver.featurelearning.data import extract_features
 import sigver.featurelearning.models as models
 import argparse
-from sigver.datasets.util import load_dataset, get_subset
+from sigver.datasets.util import load_dataset, get_subset, load_extracted_features
 import sigver.wd.training as training
 import numpy as np
 import pickle
@@ -48,14 +48,27 @@ def main(args):
         input = batch[0].to(device)
         return base_model(input)
 
-    x, y, yforg, user_mapping, filenames = load_dataset(args.data_path)
-
-    features = extract_features(x, process_fn, args.batch_size, args.input_size)
-
+    if args.input_type == "image":
+        x, y, yforg, user_mapping, filenames = load_dataset(args.data_path)
+        features = extract_features(x, process_fn, args.batch_size, args.input_size)
+    else:
+        features, y, yforg = load_extracted_features(args.data_path)
+    
     data = (features, y, yforg)
-
     exp_set = get_subset(data, exp_users)
     dev_set = get_subset(data, dev_users)
+    
+    
+    # data = (x, y, yforg)
+    # exp_x, exp_y, exp_yforg = get_subset(data, exp_users)
+    # exp_features = extract_features(exp_x, process_fn, args.batch_size, args.input_size)
+    
+    # dev_x, dev_y, dev_yforg = get_subset(data, dev_users)
+    # dev_features = extract_features(dev_x, process_fn, args.batch_size, args.input_size)
+    
+    # exp_set = (exp_features, exp_y, exp_yforg)
+    # dev_set = (dev_features, dev_y, dev_yforg)
+        
 
     rng = np.random.RandomState(1234)
 
@@ -114,6 +127,8 @@ def parse_args():
     parser.add_argument('--gpu-idx', type=int, default=0)
     parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--folds', type=int, default=10)
+    
+    parser.add_argument('--input-type', type=str, default="image", choices=["features", "image"])
     
     return parser.parse_args()
 if __name__ == '__main__':
