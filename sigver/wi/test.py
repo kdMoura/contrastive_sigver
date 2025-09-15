@@ -59,6 +59,7 @@ def main(args):
                 dev_set = get_subset(data, dev_users)
             
         else:
+            print("Random spliting users..")
             users = np.array((range(*args.random_users))) 
             exp_users = rng.choice(users, len(users)//2, replace=False)
             dev_users = users[~np.isin(users,exp_users)]
