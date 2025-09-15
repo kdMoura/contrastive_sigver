@@ -266,7 +266,7 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
         than the current user) to consider as negative sample.
     num_gen_test: int
         Number of genuine signatures for testing
-    um_sk_test: int
+    num_sk_test: int
         Number of skilled signatures for testing. 
         If set to -1 (default), uses the same value as '--gen-for-test'
     global_threshold: float
