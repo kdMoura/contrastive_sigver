@@ -135,6 +135,7 @@ def test_all_users(model: sklearn.svm.SVC,
                    exp_ref: Tuple[np.ndarray, np.ndarray, np.ndarray],
                    exp_test: Tuple[np.ndarray, np.ndarray, np.ndarray],
                    num_gen_test: int,
+                   num_sk_test: int,
                    fusion: str,
                    global_threshold: float,
                    rng: np.random.RandomState) -> Dict:
@@ -177,7 +178,7 @@ def test_all_users(model: sklearn.svm.SVC,
         test_genuine_idx = np.flatnonzero((y_test == user) & (yforg_test == 0))
         random_forgeries_idx = np.flatnonzero((y_test != user) & (yforg_test == 0))
 
-        skilled_forgeries_chosen_idx = rng.choice(skilled_forgeries_idx, num_gen_test, replace=False)
+        skilled_forgeries_chosen_idx = rng.choice(skilled_forgeries_idx, num_sk_test, replace=False)
         test_genuine_chosen_idx = rng.choice(test_genuine_idx, num_gen_test, replace=False)
         
         user_candidates = np.delete(users, np.where(users == user))
@@ -272,6 +273,7 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
                          num_gen_train: int,
                          num_gen_ref: int,
                          num_gen_test: int,
+                         num_sk_test: int,
                          fusion: str,
                          global_threshold: float = 0,
                          rng: np.random.RandomState = np.random.RandomState()) \
@@ -303,6 +305,9 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
         Number of genuine signatures used as reference signatures within fusion function    
     num_gen_test: int
         Number of genuine signatures for testing
+    num_sk_test: int
+        Number of skilled signatures for testing. 
+        If set to -1 (default), uses the same value as '--gen-for-test'
     fusion: str
         The applied fusion function when veryfing signatures
     global_threshold: float
@@ -333,6 +338,6 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
     classifier = train_all_users(dev_train, svm_type, C, gamma, num_gen_train, rng)
 
     print('Tests have been performed:')
-    results = test_all_users(classifier, exp_ref, exp_test, num_gen_test, fusion, global_threshold, rng)
+    results = test_all_users(classifier, exp_ref, exp_test, num_gen_test, num_sk_test, fusion, global_threshold, rng)
 
     return classifier, results
