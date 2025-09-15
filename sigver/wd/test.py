@@ -135,6 +135,8 @@ def parse_args():
     parser.add_argument('--folds', type=int, default=10)
     
     parser.add_argument('--input-type', type=str, default="image", choices=["features", "image"])
+    parser.add_argument('--exp-test-users', type=int, nargs=2, 
+            help='Range of users to be tested while all other are employed as random forgeries for training') 
     
     return parser.parse_args()
 if __name__ == '__main__':
