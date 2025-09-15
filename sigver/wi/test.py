@@ -9,6 +9,7 @@ import pickle
 
 
 def main(args):
+    if args.random_users
     exp_users = range(*args.exp_users)
     dev_users = range(*args.dev_users)
 
@@ -79,9 +80,8 @@ def parse_args():
 
     parser.add_argument('--exp-users', type=int, nargs=2, default=(0, 300))
     parser.add_argument('--dev-users', type=int, nargs=2, default=(5000, 7000))
-    parser.add_argument(
-    '--users-for-random-split', nargs=2,
-        help="Specify a user interval: the exp and dev sets will be created by randomly assigning half the users to each set."
+    parser.add_argument('--random-users', nargs=2, 
+                        help="Specify a user interval: the exp and dev sets will be created by randomly assigning half the users to each set."
         )
 
     parser.add_argument('--gen-for-train', type=int, default=12)
