@@ -89,6 +89,7 @@ def main(args):
                                                              num_forg_from_dev=args.forg_from_dev,
                                                              num_gen_test=args.gen_for_test,
                                                              num_sk_test=sk_for_test,
+                                                             exp_test_users=args.exp_test_users,
                                                              global_threshold=args.thr,
                                                              rng=rng)
         this_eer_u, this_eer = results['all_metrics']['EER_userthresholds'], results['all_metrics']['EER']
