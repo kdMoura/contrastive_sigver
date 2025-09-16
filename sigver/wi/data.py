@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple, Optional
-
+from scipy.spatial.distance import cdist
 
 def split_ref_test(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
                      num_gen_ref: int,
@@ -160,7 +160,7 @@ def create_training_set(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
         G = S[:,:num_gen_train-1,:]
         u_between = pairwise_between_dissimilarity(G,num_gen_train//2,rng)
     else:
-        u_between = pairwise_between_dissimilarity_with_protosig(S,num_gen_train//2,rng)
+        u_between = pairwise_between_dissimilarity_with_protosig(S,num_gen_train//2, prototypical_sig, rng)
 
     u_between_y = np.full((u_between.shape[0]),-1)
 
@@ -191,7 +191,7 @@ def pairwise_between_dissimilarity(arr, n_against, rng):
 def pairwise_between_dissimilarity_with_protosig(arr, n_against, prototypical_sig, rng):
     n_users = arr.shape[0]
     n_signs = arr.shape[1]
-    dsim_len = int(n_users * n_signs * n_against)
+    dsim_len = int(n_users * (n_signs-1) * n_against)
     dsim = np.zeros((dsim_len,arr.shape[2]))
     
     pos = 0
@@ -203,8 +203,8 @@ def pairwise_between_dissimilarity_with_protosig(arr, n_against, prototypical_si
 
         selected = sorted_prot[0:n_against]
         
-        for j in selected:
-            diff = np.absolute(user_all_signs[0:-1] - arr[j][rng.randint(n_signs)])
+        for s_arr in selected:
+            diff = np.absolute(user_all_signs[0:-1] - s_arr)
             dsim[pos: pos + diff.shape[0]] = diff 
             pos += diff.shape[0]
             
