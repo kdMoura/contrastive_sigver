@@ -43,7 +43,7 @@ def train_wiclassifier(training_set: Tuple[np.ndarray, np.ndarray],
 
     # Train the model
     if svmType == 'rbf':
-        model = sklearn.svm.SVC(C=C, gamma=gamma)
+        model = sklearn.svm.SVC(C=C, gamma=gamma, cache_size=16384)
     elif svmType == 'linear':
         model = sklearn.svm.SVC(kernel='linear', C=C)
     else:
