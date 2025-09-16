@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Tuple
+from typing import Tuple, Optional
 
 
 def split_ref_test(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
@@ -130,7 +130,8 @@ def set_to_genuine_array(input_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
 
 def create_training_set(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
                         num_gen_train: int,
-                        rng: np.random.RandomState) -> Tuple[np.ndarray, np.ndarray]:
+                        rng: np.random.RandomState,
+                        prototypical_sig: Optional[np.ndarray] = None) -> Tuple[np.ndarray, np.ndarray]:
     """ Creates a training set for training a WI classifier for a user
 
     Parameters
@@ -141,7 +142,8 @@ def create_training_set(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
         Number of genuine signatures of each user used for training
     rng: np.random.RandomState
         The random number generator (for reproducibility)
-
+    prototypical_sig: (Optional) np.ndarray
+        The set of prototypical signatures to be used as negative samples
     Returns
     -------
     np.ndarray (N), np.ndarray (N)
@@ -153,9 +155,13 @@ def create_training_set(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
 
     u_within = pairwise_within_disimilarity(S)
     u_within_y = np.ones((u_within.shape[0]))
+    
+    if prototypical_sig is None:
+        G = S[:,:num_gen_train-1,:]
+        u_between = pairwise_between_dissimilarity(G,num_gen_train//2,rng)
+    else:
+        u_between = pairwise_between_dissimilarity_with_protosig(S,num_gen_train//2,rng)
 
-    G = S[:,:num_gen_train-1,:]
-    u_between = pairwise_between_dissimilarity(G,num_gen_train//2,rng)
     u_between_y = np.full((u_between.shape[0]),-1)
 
     LX = np.concatenate((u_within,u_between),axis=0) 
@@ -177,6 +183,28 @@ def pairwise_between_dissimilarity(arr, n_against, rng):
         selected = rng.choice(candidates,n_against,replace=False)
         for j in selected:
             diff = np.absolute(user_all_signs - arr[j][rng.randint(n_signs)])
+            dsim[pos: pos + diff.shape[0]] = diff 
+            pos += diff.shape[0]
+            
+    return dsim
+
+def pairwise_between_dissimilarity_with_protosig(arr, n_against, prototypical_sig, rng):
+    n_users = arr.shape[0]
+    n_signs = arr.shape[1]
+    dsim_len = int(n_users * n_signs * n_against)
+    dsim = np.zeros((dsim_len,arr.shape[2]))
+    
+    pos = 0
+    for i in range(n_users):
+        user_all_signs = arr[i]
+        
+        pos_centroid = np.mean(user_all_signs, axis=0)
+        sorted_prot, _, _ = find_closest_samples(prototypical_sig, pos_centroid)
+
+        selected = sorted_prot[0:n_against]
+        
+        for j in selected:
+            diff = np.absolute(user_all_signs[0:-1] - arr[j][rng.randint(n_signs)])
             dsim[pos: pos + diff.shape[0]] = diff 
             pos += diff.shape[0]
             
@@ -234,3 +262,16 @@ def get_random_forgeries_from_dev(dev_set: Tuple[np.ndarray, np.ndarray, np.ndar
 
     return np.concatenate(random_forgeries)
 
+
+def find_closest_samples(samples, sample_A, metric='euclidean'):
+    # Calculate distances between sample_A and all samples
+    distances = cdist([sample_A], samples, metric=metric).flatten()
+    
+    # Get indices that would sort the distances
+    sorted_indices = np.argsort(distances)
+    
+    # Sort the samples and distances
+    sorted_samples = samples[sorted_indices]
+    sorted_distances = distances[sorted_indices]
+    
+    return sorted_samples, sorted_indices, sorted_distances

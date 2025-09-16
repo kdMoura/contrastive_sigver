@@ -14,7 +14,8 @@ import sys
 def train_wiclassifier(training_set: Tuple[np.ndarray, np.ndarray],
                             svmType: str,
                             C: float,
-                            gamma: Optional[float]) -> sklearn.svm.SVC:
+                            gamma: Optional[float],
+                            use_scaler: Optional[float] = True) -> sklearn.svm.SVC:
     """ Trains an SVM classifier for a user
 
     Parameters
@@ -53,13 +54,17 @@ def train_wiclassifier(training_set: Tuple[np.ndarray, np.ndarray],
                               eta0=0.01,
                               max_iter=2000,
                               tol=0.001)
+    
+    if use_scaler:
+        model_with_scaler = pipeline.Pipeline([('scaler', preprocessing.StandardScaler(with_mean=False)),
+                                               ('classifier', model)])
+    
+        model_with_scaler.fit(train_x, train_y)
 
-    model_with_scaler = pipeline.Pipeline([('scaler', preprocessing.StandardScaler(with_mean=False)),
-                                           ('classifier', model)])
-
-    model_with_scaler.fit(train_x, train_y)
-
-    return model_with_scaler
+        return model_with_scaler
+    
+    model.fit(train_x, train_y)
+    return model
 
 
 def test_user(model: sklearn.svm.SVC,
@@ -99,7 +104,8 @@ def train_all_users(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
                     C: float,
                     gamma: float,
                     num_gen_train: int,
-                    rng: np.random.RandomState) -> Dict[int, sklearn.svm.SVC]:
+                    rng: np.random.RandomState,
+                    prototypical_sig: Optional[np.ndarray] = None) -> Dict[int, sklearn.svm.SVC]:
     """ Train classifiers for all users in the exploitation set
 
     Parameters
@@ -116,7 +122,8 @@ def train_all_users(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
         Number of genuines from each user used in training
     rng: np.random.RandomState
         The random number generator (for reproducibility)
-
+    prototypical_sig: (Optional) np.ndarray
+        The set of prototypical signatures to be used as negative samples
     Returns
     -------
     Dict int -> sklearn.svm.SVC
@@ -124,9 +131,10 @@ def train_all_users(dev_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
 
     """
     
-    training_set = data.create_training_set(dev_train, num_gen_train, rng)
+    training_set = data.create_training_set(dev_train, num_gen_train, rng, prototypical_sig)
 
-    classifier = train_wiclassifier(training_set, svm_type, C, gamma)
+    use_scaler = False if prototypical_sig is not None else True
+    classifier = train_wiclassifier(training_set, svm_type, C, gamma, use_scaler)
 
     return classifier
 
@@ -276,6 +284,7 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
                          num_sk_test: int,
                          fusion: str,
                          global_threshold: float = 0,
+                         prototypical_sig: Optional[np.ndarray] = None,
                          rng: np.random.RandomState = np.random.RandomState()) \
         -> Tuple[Dict[int, sklearn.svm.SVC], Dict]:
     """ Train and test classifiers for every user in the exploitation set,
@@ -313,6 +322,8 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
     global_threshold: float
         The threshold used to compute false acceptance and
         false rejection rates
+    prototypical_sig: (Optional) np.ndarray
+        The set of prototypical signatures to be used as negative samples
     rng: np.random.RandomState
         The random number generator (for reproducibility)
 
@@ -335,7 +346,7 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
     dev_train = data.split_train(dev_set, num_gen_train, rng)
 
     print('Training Writer-Independent (WI) classifier...')
-    classifier = train_all_users(dev_train, svm_type, C, gamma, num_gen_train, rng)
+    classifier = train_all_users(dev_train, svm_type, C, gamma, num_gen_train, rng, prototypical_sig)
 
     print('Tests have been performed:')
     results = test_all_users(classifier, exp_ref, exp_test, num_gen_test, num_sk_test, fusion, global_threshold, rng)

@@ -37,7 +37,10 @@ def main(args):
     data = (features, y, yforg)
     
     
-
+    prototypical_sig = None
+    if args.protosig_path is not None:
+        prot_data = np.load(args.protosig_path)
+        prototypical_sig = prot_data['prototypes']
     
 
     rng = np.random.RandomState(1234)
@@ -79,6 +82,7 @@ def main(args):
                                                              num_sk_test=sk_for_test,
                                                              fusion=args.fusion,
                                                              global_threshold=args.thr,
+                                                             prototypical_sig=prototypical_sig,
                                                              rng=rng)
         this_eer_u, this_eer = results['all_metrics']['EER_userthresholds'], results['all_metrics']['EER']
         all_results.append(results)
@@ -125,6 +129,7 @@ def parse_args():
     parser.add_argument('--folds', type=int, default=10)
     
     parser.add_argument('--input-type', type=str, default="image", choices=["features", "image"])
+    parser.add_argument('--protosig-path', type=str)
 
     return parser.parse_args()
 
