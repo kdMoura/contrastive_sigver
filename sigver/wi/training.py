@@ -251,7 +251,8 @@ def test_signatures(model: sklearn.svm.SVC,
     """
 
     all_predictions = np.empty(test_signatures.shape[0])
-    all_predictions[:] = np.NaN
+    #all_predictions[:] = np.NaN
+    all_predictions[:] = np.nan
 
     for qsign in range(test_signatures.shape[0]):
 
