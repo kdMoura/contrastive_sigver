@@ -152,6 +152,60 @@ def train_all_users(exp_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
 
     return classifiers
 
+def train_all_users_with_protosig(exp_train: Tuple[np.ndarray, np.ndarray, np.ndarray],
+                    dev_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
+                    svm_type: str,
+                    C: float,
+                    gamma: float,
+                    prototypical_sig: np.ndarray,
+                    rng: np.random.RandomState) -> Dict[int, sklearn.svm.SVC]:
+    """ Train classifiers for all users in the exploitation set
+
+    Parameters
+    ----------
+    exp_train: tuple of np.ndarray (x, y, yforg)
+        The training set split of the exploitation set (system users)
+    dev_set: tuple of np.ndarray (x, y, yforg)
+        The development set
+    svm_type: string ('linear' or 'rbf')
+        The SVM type
+    C: float
+        Regularization for the SVM optimization
+    gamma: float
+        Hyperparameter for the RBF kernel
+    prototypical_sig: np.ndarray
+         The set of prototypical signatures to be used as negative samples
+    rng: np.random.RandomState
+        The random number generator (for reproducibility)
+
+    Returns
+    -------
+    Dict int -> sklearn.svm.SVC
+        A dictionary of trained classifiers, where the keys are the users.
+
+    """
+    classifiers = {}
+
+    exp_y = exp_train[1]
+    users = np.unique(exp_y)
+
+    exp_x, exp_y, exp_yforg = exp_train
+    negative_samples = prototypical_sig
+
+    for user in tqdm(users, file=sys.stdout):
+
+        positive_samples = exp_x[(exp_y == user) & (exp_yforg == 0)]
+        
+        train_x = np.concatenate((positive_samples, negative_samples))
+        train_y = np.concatenate((np.full(len(positive_samples), 1),
+                                  np.full(len(negative_samples), -1)))
+                
+        training_set = (train_x, train_y)
+
+        classifiers[user] = train_wdclassifier_user(training_set, svm_type, C, gamma)
+
+    return classifiers
+
 
 def test_all_users(classifier_all_user: Dict[int, sklearn.svm.SVC],
                    exp_test: Tuple[np.ndarray, np.ndarray, np.ndarray],
@@ -299,6 +353,85 @@ def train_test_all_users(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
     print('Training Writer-Dependent (WD) classifiers...')
     classifiers = train_all_users(exp_train, dev_set, svm_type, C, gamma,
                                   num_forg_from_dev, num_forg_from_exp, rng)
+
+    print('Tests have been performed:')
+    if exp_test_users is not None:
+        exp_test_X, exp_test_y, exp_test_yforg = exp_test
+        mask = np.isin(exp_test_y, range(*exp_test_users))
+        subset_exp_test = (exp_test_X[mask], exp_test_y[mask], exp_test_yforg[mask] )
+        results = test_all_users(classifiers, subset_exp_test, num_gen_test, num_sk_test, global_threshold, rng)  
+    else:    
+        results = test_all_users(classifiers, exp_test, num_gen_test, num_sk_test, global_threshold, rng)
+
+
+    return classifiers, results
+
+def train_test_all_users_with_protosig(exp_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
+                         dev_set: Tuple[np.ndarray, np.ndarray, np.ndarray],
+                         svm_type: str,
+                         C: float,
+                         gamma: float,
+                         num_gen_train: int,
+                         prototypical_sig:int,
+                         num_gen_test: int,
+                         num_sk_test: int,
+                         exp_test_users:tuple,
+                         global_threshold: float = 0,
+                         rng: np.random.RandomState = np.random.RandomState()) \
+        -> Tuple[Dict[int, sklearn.svm.SVC], Dict]:
+    """ Train and test classifiers for every user in the exploitation set,
+        and returns the metrics.
+
+    Parameters
+    ----------
+    exp_set: tuple of np.ndarray (x, y, yforg)
+        The exploitation set
+    dev_set: tuple of np.ndarray (x, y, yforg)
+        The development set
+    svm_type: string ('linear' or 'rbf')
+        The SVM type
+    C: float
+        Regularization for the SVM optimization
+    gamma: float
+        Hyperparameter for the RBF kernel
+    num_gen_train: int
+        Number of genuine signatures available for training
+    prototypical_sig: np.ndarray
+        The set of prototypical signatures to be used as negative samples
+    num_gen_test: int
+        Number of genuine signatures for testing
+    num_sk_test: int
+        Number of skilled signatures for testing. 
+        If set to -1 (default), uses the same value as '--gen-for-test'
+    exp_test_users: tuple
+        Range of users used for test instead of using all. 
+        This allows to employ all other users as random forgeries for training, 
+        while testing only a specific group.  
+    global_threshold: float
+        The threshold used to compute false acceptance and
+        false rejection rates
+    rng: np.random.RandomState
+        The random number generator (for reproducibility)
+
+    Returns
+    -------
+    dict (int -> sklearn.svm.SVC)
+        The classifiers for all users
+
+    dict
+        A dictionary containing a variety of metrics, including
+        false acceptance and rejection rates, equal error rates
+
+    """
+
+    if global_threshold:
+        print('Global threshold is set to:', global_threshold)
+
+    exp_train, exp_test = data.split_train_test(exp_set, num_gen_train, num_gen_test, rng)
+
+    print('Training Writer-Dependent (WD) classifiers...')
+    classifiers = train_all_users_with_protosig(exp_train, dev_set, svm_type, C, gamma,
+                                  prototypical_sig, rng)
 
     print('Tests have been performed:')
     if exp_test_users is not None:
