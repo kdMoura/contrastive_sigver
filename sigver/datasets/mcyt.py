@@ -55,3 +55,32 @@ class MCYTDataset(IterableDataset):
 
     def iter_simple_forgery(self, user):
         yield from ()  # No simple forgeries
+    
+    def get_signature(self, user, img_idx, forgery):
+        """
+        Returns a particular signature given by:
+        - user id
+        - image index
+        - forgery flag
+        """
+    
+        user_folder = os.path.join(self.path, f'{user:04d}')
+    
+        all_files = sorted(os.listdir(user_folder))
+    
+        if forgery:
+            files = [
+                f for f in all_files
+                if f'{user:04d}f' in f.lower()
+            ]
+        else:
+            files = [
+                f for f in all_files
+                if f.lower().startswith(f'{user:04d}v')
+            ]
+    
+        filename = files[img_idx - 1]
+    
+        full_path = os.path.join(user_folder, filename)
+    
+        return img_as_ubyte(imread(full_path, as_gray=True))

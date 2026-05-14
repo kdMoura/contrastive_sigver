@@ -80,3 +80,10 @@ class IterableDataset(ABC):
 
         """
         pass
+    
+    @abstractmethod 
+    def get_signature(self, user, img_idx, forgery):
+        """ Returns a particular signature (given by user id, img id and
+            whether or not it is a forgery
+        """
+        pass

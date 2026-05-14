@@ -41,18 +41,22 @@ def compute_metrics(genuine_preds: List[np.ndarray],
     all_random_preds = np.concatenate(random_preds)
     all_skilled_preds = np.concatenate(skilled_preds)
 
-    FRR = 1 - np.mean(all_genuine_preds >= global_threshold)
-    FAR_random = 1 - np.mean(all_random_preds < global_threshold)
-    FAR_skilled = 1 - np.mean(all_skilled_preds < global_threshold)
+    
 
     #Metrics considering genuine signatures and skilled forgeries
     aucs, meanAUC = compute_AUCs(genuine_preds, skilled_preds)
     EER, global_threshold = compute_EER(all_genuine_preds, all_skilled_preds)
     EER_userthresholds = calculate_EER_user_thresholds(genuine_preds, skilled_preds)
     
+    FRR = 1 - np.mean(all_genuine_preds >= global_threshold)
+   
+    FAR_skilled = 1 - np.mean(all_skilled_preds < global_threshold)
+    
+    
     EER_rf, global_threshold_rf = compute_EER(all_genuine_preds, all_random_preds)
     EER_userthresholds_rf = calculate_EER_user_thresholds(genuine_preds, random_preds)
 
+    FAR_random = 1 - np.mean(all_random_preds < global_threshold_rf)
 
     all_metrics = {'FRR': FRR,
                    'FAR_random': FAR_random,

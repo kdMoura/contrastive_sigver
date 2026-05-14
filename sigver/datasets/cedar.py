@@ -50,3 +50,22 @@ class CedarDataset(IterableDataset):
 
     def iter_simple_forgery(self, user):
         yield from ()  # No simple forgeries
+    
+    def get_signature(self, user, img_idx, forgery):
+        """
+        Returns a particular signature given by:
+        - user id
+        - image index
+        - forgery flag
+        """
+    
+        if forgery:
+            folder = 'full_forg'
+            filename = f'forgeries_{user}_{img_idx}.png'
+        else:
+            folder = 'full_org'
+            filename = f'original_{user}_{img_idx}.png'
+    
+        full_path = os.path.join(self.path, folder, filename)
+
+        return img_as_ubyte(imread(full_path, as_gray=True))
