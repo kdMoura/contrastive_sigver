@@ -8,7 +8,7 @@ class GPDSSynthDataset(IterableDataset):
     """ Helper class to load the GPDS-960 Grayscale dataset
     """
 
-    def __init__(self, path, extension='png'):
+    def __init__(self, path, extension='jpg'):
         self.path = path
         self.users = [int(user) for user in sorted(os.listdir(self.path))]
         self.users = sorted(self.users)
